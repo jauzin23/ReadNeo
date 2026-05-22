@@ -37,8 +37,13 @@ jobs:
           show_languages: "true"
           show_repos: "true"
           show_stars: "true"
+          show_stars: "true"
           show_commits: "true"
           show_followers: "true"
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Update Neofetch card
 ```
 
 Once that runs, just drop this line into your `README.md`:
@@ -96,8 +101,13 @@ jobs:
           show_languages: "true"
           show_repos: "true"
           show_stars: "true"
+          show_stars: "true"
           show_commits: "true"
           show_followers: "true"
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Update Neofetch card
 ```
 
 Depois de correr, adiciona esta linha ao teu `README.md`:
