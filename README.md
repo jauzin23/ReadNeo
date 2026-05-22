@@ -25,6 +25,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: jauzin23/ReadNeo@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           # You can toggle any of these modules on or off
           os: "Windows 11"
@@ -82,6 +84,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: jauzin23/ReadNeo@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           # Podes ativar ou desativar qualquer um destes módulos
           os: "Windows 11"
