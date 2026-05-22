@@ -1,0 +1,52 @@
+name: "Neofetch Profile Card"
+description: "Generates a zero-config neofetch-style profile card as an SVG"
+author: "jauzin23"
+inputs:
+  os:
+    description: "Operating System"
+    required: false
+  ide:
+    description: "Preferred IDE"
+    required: false
+  ascii_art:
+    description: "Custom ASCII art text"
+    required: false
+  theme:
+    description: "Color theme"
+    required: false
+    default: "dracula"
+  show_os:
+    description: 'Show OS'
+    required: false
+    default: 'true'
+  show_uptime:
+    description: 'Show uptime'
+    required: false
+    default: 'true'
+  show_ide:
+    description: 'Show IDE'
+    required: false
+    default: 'true'
+  show_languages:
+    description: 'Show top languages'
+    required: false
+    default: 'true'
+  show_repos:
+    description: 'Show repo count'
+    required: false
+    default: 'true'
+  show_stars:
+    description: 'Show stars count'
+    required: false
+    default: 'true'
+  show_commits:
+    description: 'Show commits count'
+    required: false
+    default: 'true'
+  show_followers:
+    description: 'Show followers count'
+    required: false
+    default: 'true'
+runs:
+  using: "node20"
+  main: "dist/index.js"
