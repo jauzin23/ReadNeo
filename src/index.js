@@ -67,9 +67,19 @@ async function run() {
     const username = process.env.GITHUB_REPOSITORY_OWNER;
     const osInput = core.getInput("os");
     const ideInput = core.getInput("ide");
-    const asciiInput = core.getInput("ascii_art") || defaultAscii;
+    let asciiInput = core.getInput("ascii_art");
+    const asciiPath = core.getInput("ascii_path");
     const themeInput = core.getInput("theme") || "dracula";
     const theme = themes[themeInput] || themes.dracula;
+
+    if (!asciiInput && asciiPath && fs.existsSync(asciiPath)) {
+      try {
+        asciiInput = fs.readFileSync(asciiPath, 'utf8');
+      } catch (err) {
+        core.warning(`Could not read ascii_path: ${err.message}`);
+      }
+    }
+    asciiInput = asciiInput || defaultAscii;
 
     const stats = await fetchStats(token, username);
 

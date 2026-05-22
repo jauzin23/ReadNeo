@@ -10,8 +10,7 @@ This GitHub Action puts a Neofetch-style card directly on your profile. It's zer
 
 All you have to do is create a file in your repository at `.github/workflows/neofetch.yml` with this exact code:
 
-> **Note on ASCII Art:** For the best visual layout, we recommend using an ASCII art design that is roughly **800 characters** in total size and around **35 lines** tall. The Action will automatically trim empty padding, but keeping it within these dimensions ensures it aligns beautifully with the stats panel!
-
+> **Note on ASCII Art:** For the best visual layout, we recommend using an ASCII art design that is roughly **800 characters** in total size and around **35 lines** tall. The Action will automatically trim empty padding, but keeping it within these dimensions ensures it aligns beautifully with the stats panel! You can load your ASCII art dynamically by creating a text file in your repo (e.g. `.github/ascii.txt`) and passing its path via the `ascii_path` variable.
 ```yaml
 name: Generate Neofetch Card
 on:
@@ -31,6 +30,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           # You can toggle any of these modules on or off
+          ascii_path: ".github/ascii.txt" # Reads your custom ASCII art from a file in your repo
           os: "Windows 11"
           ide: "VS Code"
           show_os: "true"
@@ -76,8 +76,7 @@ Este repositório tem um GitHub Action que cria um card de terminal top, estilo 
 
 Basta criares um ficheiro no teu repositório em `.github/workflows/neofetch.yml` com este código:
 
-> **Nota sobre a Arte ASCII:** Para obteres o melhor resultado visual, recomendamos o uso de uma arte ASCII com cerca de **800 caracteres** no total e cerca de **35 linhas** de altura. O Action irá cortar automaticamente o espaço vazio, mas manter estas dimensões garante que a arte se alinha perfeitamente com o painel de estatísticas!
-
+> **Nota sobre a Arte ASCII:** Para obteres o melhor resultado visual, recomendamos o uso de uma arte ASCII com cerca de **800 caracteres** no total e cerca de **35 linhas** de altura. O Action irá cortar automaticamente o espaço vazio, mas manter estas dimensões garante que a arte se alinha perfeitamente com o painel de estatísticas! Podes carregar a tua arte ASCII dinamicamente criando um ficheiro de texto no teu repositório (ex: `.github/ascii.txt`) e passando o caminho através da variável `ascii_path`.
 ```yaml
 name: Gerar Cartão Neofetch
 on:
@@ -97,6 +96,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           # Podes ativar ou desativar qualquer um destes módulos
+          ascii_path: ".github/ascii.txt" # Lê a tua arte ASCII de um ficheiro de texto no repositório
           os: "Windows 11"
           ide: "VS Code"
           show_os: "true"
