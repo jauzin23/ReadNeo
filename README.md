@@ -27,6 +27,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: jauzin23/ReadNeo@v2
         env:
+          # If you want to include stats from private repositories, replace secrets.GITHUB_TOKEN with a Personal Access Token (PAT) that has the `repo` scope.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           # You can toggle any of these modules on or off
@@ -96,9 +97,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: jauzin23/ReadNeo@v2
         env:
+          # Se quiseres incluir estatísticas de repositórios privados, substitui secrets.GITHUB_TOKEN por um Personal Access Token (PAT) com a permissão `repo`.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           # Podes ativar ou desativar qualquer um destes módulos
+          lang: "pt" # Define o idioma para Português
           ascii_path: ".github/ascii.txt" # Lê a tua arte ASCII de um ficheiro de texto no repositório
           os: "Windows 11"
           ide: "VS Code"

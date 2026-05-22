@@ -10,11 +10,11 @@ async function fetchStats(token, username) {
         createdAt
         followers { totalCount }
         following { totalCount }
-        repositories(first: 100, ownerAffiliations: OWNER, isFork: false, privacy: PUBLIC, orderBy: {field: STARGAZERS, direction: DESC}) {
+        repositories(first: 100, ownerAffiliations: OWNER, isFork: false, orderBy: {field: STARGAZERS, direction: DESC}) {
           totalCount
           nodes {
             stargazerCount
-            languages(first: 5, orderBy: {field: SIZE, direction: DESC}) {
+            languages(first: 10, orderBy: {field: SIZE, direction: DESC}) {
               edges {
                 size
                 node { name }
@@ -30,17 +30,20 @@ async function fetchStats(token, username) {
 
   let stars = 0;
   const langSize = {};
+  let totalLangSize = 0;
   
   for (const repo of user.repositories.nodes) {
     stars += repo.stargazerCount;
     for (const edge of repo.languages.edges) {
       langSize[edge.node.name] = (langSize[edge.node.name] || 0) + edge.size;
+      totalLangSize += edge.size;
     }
   }
 
   const topLangs = Object.entries(langSize)
+    .filter(([name, size]) => (size / totalLangSize) > 0.02) // Filter out languages < 2%
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 3)
+    .slice(0, 6)
     .map(e => e[0])
     .join(", ");
 
