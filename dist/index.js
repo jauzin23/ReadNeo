@@ -23980,11 +23980,25 @@ var require_github2 = __commonJS({
       const topLangs = Object.entries(langSize).filter(([name, size]) => size / totalLangSize > 0.02).sort((a, b) => b[1] - a[1]).slice(0, 6).map((e) => e[0]).join(", ");
       let commits = 0;
       try {
-        const res = await octokit.rest.search.commits({
-          q: `author:${username}`,
-          per_page: 1
-        });
-        commits = res.data.total_count;
+        const creationYear = new Date(user.createdAt).getFullYear();
+        const currentYear = (/* @__PURE__ */ new Date()).getFullYear();
+        for (let year = creationYear; year <= currentYear; year++) {
+          const from = `${year}-01-01T00:00:00Z`;
+          const to = `${year}-12-31T23:59:59Z`;
+          const q = `
+        query($username: String!, $from: DateTime!, $to: DateTime!) {
+          user(login: $username) {
+            contributionsCollection(from: $from, to: $to) {
+              totalCommitContributions
+              restrictedContributionsCount
+            }
+          }
+        }
+      `;
+          const res = await octokit.graphql(q, { username, from, to });
+          const coll = res.user.contributionsCollection;
+          commits += coll.totalCommitContributions + coll.restrictedContributionsCount;
+        }
       } catch (e) {
         commits = "Hidden";
       }
