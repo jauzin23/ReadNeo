@@ -10,7 +10,7 @@ async function fetchStats(token, username) {
         createdAt
         followers { totalCount }
         following { totalCount }
-        repositories(first: 100, ownerAffiliations: OWNER, isFork: false, orderBy: {field: STARGAZERS, direction: DESC}) {
+        repositories(first: 100, ownerAffiliations: OWNER, isFork: false, privacy: PUBLIC, orderBy: {field: STARGAZERS, direction: DESC}) {
           totalCount
           nodes {
             stargazerCount
