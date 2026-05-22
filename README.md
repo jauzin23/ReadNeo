@@ -1,9 +1,12 @@
-# Neofetch Profile Card
+# ReadNeo - Neofetch Profile Card
 
-Hey there! Want to make your GitHub profile README stand out without hosting a server, writing complex API scripts, or paying for anything?
+<div align="center">
+  <img src="https://media.tenor.com/ijjz-HzDh_cAAAAM/matrix.gif" alt="Matrix Rain" />
+</div>
+
+**A zero-config GitHub Action that generates a dynamic, auto-updating Neofetch-style profile card for your README. Featuring custom ASCII art, automatic cache-busting, and live GitHub stats.**
 
 This GitHub Action puts a Neofetch-style card directly on your profile. It's zero-setup and runs in your own repository using GitHub Actions.
-
 ## English
 
 ### Quick Start
