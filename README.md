@@ -25,7 +25,7 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - uses: jauzin23/ReadNeo@v1
+      - uses: jauzin23/ReadNeo@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -42,6 +42,9 @@ jobs:
           show_stars: "true"
           show_commits: "true"
           show_followers: "true"
+      - name: Bust Image Cache
+        run: |
+          sed -i -E "s/neofetch\.svg(\?v=[0-9]+)?/neofetch.svg?v=$(date +%s)/g" README.md
       - name: Commit and push changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
@@ -91,7 +94,7 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - uses: jauzin23/ReadNeo@v1
+      - uses: jauzin23/ReadNeo@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -108,6 +111,9 @@ jobs:
           show_stars: "true"
           show_commits: "true"
           show_followers: "true"
+      - name: Quebrar Cache da Imagem
+        run: |
+          sed -i -E "s/neofetch\.svg(\?v=[0-9]+)?/neofetch.svg?v=$(date +%s)/g" README.md
       - name: Commit and push changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
