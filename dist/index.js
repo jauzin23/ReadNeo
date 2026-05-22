@@ -24054,9 +24054,12 @@ var require_renderer = __commonJS({
     }
     function renderSvg2(asciiLinesInput, data, theme) {
       const asciiLines = processAscii(asciiLinesInput);
-      const fontSize = 20;
-      const charWidth = 12;
-      const lineHeight = 26;
+      const statsFontSize = 20;
+      const statsCharWidth = 12;
+      const statsLineHeight = 26;
+      const asciiFontSize = 14;
+      const asciiCharWidth = 8.4;
+      const asciiLineHeight = 18;
       const maxAsciiLen = Math.max(...asciiLines.map((l) => l.replace(/\x1b\[[0-9;]*m/g, "").trimEnd().length), 0);
       let maxLenNeeded = data.header.length + 3;
       for (const group of data.groups) {
@@ -24094,17 +24097,17 @@ var require_renderer = __commonJS({
           });
         }
       }
-      const asciiHeight = asciiLines.length * lineHeight;
-      const statsHeight = rows.length * lineHeight;
+      const asciiHeight = asciiLines.length * asciiLineHeight;
+      const statsHeight = rows.length * statsLineHeight;
       const height = Math.max(Math.max(asciiHeight, statsHeight) + 80, 200);
       const asciiYOffset = asciiHeight < statsHeight ? (height - asciiHeight) / 2 : 40;
       const statsYOffset = statsHeight < asciiHeight ? (height - statsHeight) / 2 : 40;
-      const statsX = 40 + maxAsciiLen * charWidth + 40;
-      const statsWidth = LINE_WIDTH * charWidth;
+      const statsX = 40 + maxAsciiLen * asciiCharWidth + 40;
+      const statsWidth = LINE_WIDTH * statsCharWidth;
       const width = statsX + statsWidth + 40;
       let asciiContent = "";
       for (let i = 0; i < asciiLines.length; i++) {
-        const y = i * lineHeight;
+        const y = i * asciiLineHeight;
         const asciiRaw = asciiLines[i] || "";
         const plainAscii = asciiRaw.replace(/\x1b\[[0-9;]*m/g, "").trimEnd();
         asciiContent += `<tspan x="0" y="${y}">${plainAscii.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</tspan>
@@ -24113,7 +24116,7 @@ var require_renderer = __commonJS({
       let statsContent = "";
       for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
-        const y = i * lineHeight;
+        const y = i * statsLineHeight;
         if (row.type === "title") {
           statsContent += `<tspan x="0" y="${y}" class="title">${row.text}</tspan><tspan class="divider"> ${row.divider}</tspan>
 `;
@@ -24148,12 +24151,17 @@ var require_renderer = __commonJS({
 
     text, tspan {
       font-family: 'ConsolasFallback', Consolas, monospace;
-      font-size: ${fontSize}px;
       white-space: pre;
     }
 
     .bg { fill: #161b22; }
-    .ascii { fill: #50fa7b; }
+    .ascii { 
+      fill: #50fa7b; 
+      font-size: ${asciiFontSize}px;
+    }
+    .info-text {
+      font-size: ${statsFontSize}px;
+    }
     .key { fill: #ffa657; }
     .value { fill: #a5d6ff; }
     .value-num { fill: #bd93f9; }
@@ -24193,7 +24201,7 @@ ${asciiContent}
 
   <!-- INFO PANEL -->
   <g transform="translate(${statsX} ${statsYOffset})">
-    <text xml:space="preserve">
+    <text class="info-text" xml:space="preserve">
 ${statsContent}
     </text>
   </g>
