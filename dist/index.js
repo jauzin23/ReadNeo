@@ -24009,95 +24009,194 @@ var require_github2 = __commonJS({
 // src/renderer.js
 var require_renderer = __commonJS({
   "src/renderer.js"(exports2, module2) {
-    function parseAnsi(line, theme) {
-      const ansiRegex = /\x1b\[[0-9;]*m/g;
-      let match;
-      let lastIndex = 0;
-      let currentColor = null;
-      const segments = [];
-      const colorMap = {
-        30: theme.black,
-        31: theme.red,
-        32: theme.green,
-        33: theme.yellow,
-        34: theme.blue,
-        35: theme.magenta,
-        36: theme.cyan,
-        37: theme.white,
-        90: theme.brightBlack,
-        91: theme.brightRed,
-        92: theme.brightGreen,
-        93: theme.brightYellow,
-        94: theme.brightBlue,
-        95: theme.brightMagenta,
-        96: theme.brightCyan,
-        97: theme.brightWhite
-      };
-      while ((match = ansiRegex.exec(line)) !== null) {
-        const textSegment = line.slice(lastIndex, match.index);
-        if (textSegment) {
-          segments.push({ text: textSegment, color: currentColor });
+    function processAscii(asciiLines) {
+      let start = 0;
+      while (start < asciiLines.length && asciiLines[start].replace(/\x1b\[[0-9;]*m/g, "").trim().length === 0)
+        start++;
+      let end = asciiLines.length - 1;
+      while (end >= 0 && asciiLines[end].replace(/\x1b\[[0-9;]*m/g, "").trim().length === 0)
+        end--;
+      if (start > end)
+        return [];
+      const trimmedLines = asciiLines.slice(start, end + 1);
+      let minSpaces = Infinity;
+      for (const line of trimmedLines) {
+        const plain = line.replace(/\x1b\[[0-9;]*m/g, "");
+        if (plain.trim().length > 0) {
+          const match = plain.match(/^ */);
+          if (match)
+            minSpaces = Math.min(minSpaces, match[0].length);
         }
-        const codeStr = match[0].slice(2, -1);
-        const codes = codeStr.split(";").map(Number);
-        for (const code of codes) {
-          if (code === 0)
-            currentColor = null;
-          else if (colorMap[code])
-            currentColor = colorMap[code];
-        }
-        lastIndex = ansiRegex.lastIndex;
       }
-      const remaining = line.slice(lastIndex);
-      if (remaining) {
-        segments.push({ text: remaining, color: currentColor });
-      }
-      return segments;
-    }
-    function renderSvg2(asciiLines, detailsLines, theme) {
-      const lineHeight = 20;
-      const charWidth = 9;
-      const maxLines = Math.max(asciiLines.length, detailsLines.length);
-      const height = maxLines * lineHeight + 80;
-      const width = 800;
-      const maxAsciiLen = Math.max(...asciiLines.map((l) => l.replace(/\x1b\[[0-9;]*m/g, "").length));
-      let linesContent = "";
-      for (let i = 0; i < maxLines; i++) {
-        const y = 60 + i * lineHeight;
-        let tspanContent = "";
-        const asciiRaw = asciiLines[i] || "";
-        const plainAscii = asciiRaw.replace(/\x1b\[[0-9;]*m/g, "");
-        const padding = " ".repeat(Math.max(0, maxAsciiLen - plainAscii.length + 4));
-        const segments = parseAnsi(asciiRaw, theme);
-        if (segments.length === 0) {
-          segments.push({ text: plainAscii, color: theme.ascii });
-        }
-        for (const seg of segments) {
-          const color = seg.color || theme.ascii;
-          tspanContent += `<tspan fill="${color}">${seg.text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</tspan>`;
-        }
-        tspanContent += `<tspan fill="transparent">${padding}</tspan>`;
-        const detailRaw = detailsLines[i] || "";
-        if (detailRaw) {
-          if (detailRaw.includes(":")) {
-            const parts = detailRaw.split(":");
-            const label = parts[0] + ":";
-            const val = parts.slice(1).join(":");
-            tspanContent += `<tspan fill="${theme.label}">${label}</tspan><tspan fill="${theme.value}">${val}</tspan>`;
+      if (minSpaces === Infinity || minSpaces === 0)
+        return trimmedLines;
+      return trimmedLines.map((line) => {
+        let spacesToRemove = minSpaces;
+        let result = "";
+        let i = 0;
+        while (i < line.length && spacesToRemove > 0) {
+          if (line[i] === " ") {
+            spacesToRemove--;
+          } else if (line[i] === "\x1B") {
+            const match = line.slice(i).match(/^\x1b\[[0-9;]*m/);
+            if (match) {
+              result += match[0];
+              i += match[0].length - 1;
+            }
           } else {
-            tspanContent += `<tspan fill="${theme.title}">${detailRaw}</tspan>`;
+            break;
           }
+          i++;
         }
-        linesContent += `<text x="20" y="${y}" font-family="monospace" font-size="14" xml:space="preserve">${tspanContent}</text>
+        result += line.slice(i);
+        return result;
+      });
+    }
+    function renderSvg2(asciiLinesInput, data, theme) {
+      const asciiLines = processAscii(asciiLinesInput);
+      const fontSize = 20;
+      const charWidth = 12;
+      const lineHeight = 26;
+      const maxAsciiLen = Math.max(...asciiLines.map((l) => l.replace(/\x1b\[[0-9;]*m/g, "").trimEnd().length), 0);
+      let maxLenNeeded = data.header.length + 3;
+      for (const group of data.groups) {
+        if (group.items.length === 0)
+          continue;
+        if (group.name !== "Info") {
+          maxLenNeeded = Math.max(maxLenNeeded, group.name.length + 3);
+        }
+        for (const item of group.items) {
+          const keyLen = item.key.length;
+          const valLen = String(item.value).length;
+          maxLenNeeded = Math.max(maxLenNeeded, keyLen + valLen + 6);
+        }
+      }
+      const LINE_WIDTH = Math.max(38, maxLenNeeded);
+      const rows = [];
+      const titleDividerLength = LINE_WIDTH - data.header.length - 1;
+      const titleDividerStr = "\u2500".repeat(Math.max(0, titleDividerLength));
+      rows.push({ type: "title", text: data.header, divider: titleDividerStr });
+      for (const group of data.groups) {
+        if (group.items.length === 0)
+          continue;
+        if (group.name !== "Info") {
+          rows.push({ type: "empty" });
+          const dividerLength = LINE_WIDTH - group.name.length - 1;
+          const dividerStr = "\u2500".repeat(Math.max(0, dividerLength));
+          rows.push({ type: "group-header", name: group.name, divider: dividerStr });
+        }
+        for (const item of group.items) {
+          rows.push({
+            type: "item",
+            key: item.key,
+            value: String(item.value),
+            isGitHubStats: group.name !== "Info"
+          });
+        }
+      }
+      const asciiHeight = asciiLines.length * lineHeight;
+      const statsHeight = rows.length * lineHeight;
+      const height = Math.max(Math.max(asciiHeight, statsHeight) + 80, 200);
+      const asciiYOffset = asciiHeight < statsHeight ? (height - asciiHeight) / 2 : 40;
+      const statsYOffset = statsHeight < asciiHeight ? (height - statsHeight) / 2 : 40;
+      const statsX = 40 + maxAsciiLen * charWidth + 40;
+      const statsWidth = LINE_WIDTH * charWidth;
+      const width = statsX + statsWidth + 40;
+      let asciiContent = "";
+      for (let i = 0; i < asciiLines.length; i++) {
+        const y = i * lineHeight;
+        const asciiRaw = asciiLines[i] || "";
+        const plainAscii = asciiRaw.replace(/\x1b\[[0-9;]*m/g, "").trimEnd();
+        asciiContent += `<tspan x="0" y="${y}">${plainAscii.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</tspan>
 `;
+      }
+      let statsContent = "";
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        const y = i * lineHeight;
+        if (row.type === "title") {
+          statsContent += `<tspan x="0" y="${y}" class="title">${row.text}</tspan><tspan class="divider"> ${row.divider}</tspan>
+`;
+        } else if (row.type === "divider") {
+          statsContent += `<tspan x="0" y="${y}" class="divider">${row.text}</tspan>
+`;
+        } else if (row.type === "group-header") {
+          statsContent += `<tspan x="0" y="${y}" class="title">${row.name}</tspan><tspan class="divider"> ${row.divider}</tspan>
+`;
+        } else if (row.type === "item") {
+          const keyStr = row.key;
+          const valStr = row.value;
+          const dotsCount = Math.max(2, LINE_WIDTH - keyStr.length - valStr.length - 4);
+          const dots = ".".repeat(dotsCount);
+          const valClass = row.isGitHubStats ? "value-num" : "value";
+          statsContent += `<tspan x="0" y="${y}" class="cc">. </tspan><tspan class="key">${keyStr}</tspan><tspan class="cc"> ${dots} </tspan><tspan class="${valClass}">${valStr}</tspan>
+`;
+        } else if (row.type === "empty") {
+          statsContent += `<tspan x="0" y="${y}"> </tspan>
+`;
+        }
       }
       return `
 <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
-  <rect width="${width}" height="${height}" fill="${theme.background}" rx="10" />
-  <circle cx="20" cy="20" r="6" fill="#ff5f56" />
-  <circle cx="40" cy="20" r="6" fill="#ffbd2e" />
-  <circle cx="60" cy="20" r="6" fill="#27c93f" />
-  <g>${linesContent}</g>
+  <style>
+    @font-face {
+      src: local('Consolas'), local('Consolas Bold');
+      font-family: 'ConsolasFallback';
+      font-display: swap;
+      size-adjust: 109%;
+    }
+
+    text, tspan {
+      font-family: 'ConsolasFallback', Consolas, monospace;
+      font-size: ${fontSize}px;
+      white-space: pre;
+    }
+
+    .bg { fill: #161b22; }
+    .ascii { fill: #50fa7b; }
+    .key { fill: #ffa657; }
+    .value { fill: #a5d6ff; }
+    .value-num { fill: #bd93f9; }
+    .cc { fill: #616e7f; }
+    .divider {
+      fill: #616e7f;
+      font-weight: bold;
+    }
+    .title {
+      fill: #8be9fd;
+      font-weight: bold;
+    }
+
+    @media (prefers-color-scheme: light) {
+      .bg { fill: #ffffff; }
+      .ascii { fill: #116329; }
+      .key { fill: #d4560f; }
+      .value { fill: #0550ae; }
+      .value-num { fill: #8250df; }
+      .cc { fill: #6e7781; }
+      .divider {
+        fill: #6e7781;
+        font-weight: bold;
+      }
+      .title { fill: #0969da; }
+    }
+  </style>
+
+  <rect class="bg" width="100%" height="100%" rx="12" />
+
+  <!-- ASCII ART -->
+  <g transform="translate(40 ${asciiYOffset})">
+    <text class="ascii" xml:space="preserve">
+${asciiContent}
+    </text>
+  </g>
+
+  <!-- INFO PANEL -->
+  <g transform="translate(${statsX} ${statsYOffset})">
+    <text xml:space="preserve">
+${statsContent}
+    </text>
+  </g>
 </svg>
 `.trim();
     }
@@ -24202,7 +24301,7 @@ async function run() {
     const themeInput = core.getInput("theme") || "dracula";
     const theme = themes[themeInput] || themes.dracula;
     const stats = await fetchStats(token, username);
-    const asciiLines = asciiInput.split("\\n").filter((l) => l.trim().length > 0 || l.length > 0);
+    const asciiLines = asciiInput.split("\n").filter((l) => l.trim().length > 0 || l.length > 0);
     const detailsLines = [];
     const showOs = core.getInput("show_os") !== "false";
     const showUptime = core.getInput("show_uptime") !== "false";
@@ -24212,26 +24311,38 @@ async function run() {
     const showStars = core.getInput("show_stars") !== "false";
     const showCommits = core.getInput("show_commits") !== "false";
     const showFollowers = core.getInput("show_followers") !== "false";
-    detailsLines.push(`${username}@github`);
-    detailsLines.push("-------------------");
+    const lang = core.getInput("lang") || "en";
+    const i18n = {
+      en: { os: "OS", uptime: "Uptime", ide: "IDE", langs: "Languages", repos: "Repos", stars: "Stars", commits: "Commits", followers: "Followers", stats: "GitHub Stats" },
+      pt: { os: "SO", uptime: "Tempo Ativo", ide: "IDE", langs: "Linguagens", repos: "Reposit\xF3rios", stars: "Estrelas", commits: "Commits", followers: "Seguidores", stats: "Status do GitHub" }
+    };
+    const t = i18n[lang] || i18n.en;
+    const infoGroup = [];
     if (showOs && osInput)
-      detailsLines.push(`OS: ${osInput}`);
+      infoGroup.push({ key: t.os, value: osInput });
     if (showUptime)
-      detailsLines.push(`Uptime: ${stats.uptime}`);
+      infoGroup.push({ key: t.uptime, value: stats.uptime });
     if (showIde && ideInput)
-      detailsLines.push(`IDE: ${ideInput}`);
+      infoGroup.push({ key: t.ide, value: ideInput });
     if (showLanguages && stats.languages)
-      detailsLines.push(`Languages: ${stats.languages}`);
-    detailsLines.push("");
+      infoGroup.push({ key: t.langs, value: stats.languages });
+    const statsGroup = [];
     if (showRepos)
-      detailsLines.push(`Repos: ${stats.repos}`);
+      statsGroup.push({ key: t.repos, value: stats.repos });
     if (showStars)
-      detailsLines.push(`Stars: ${stats.stars}`);
+      statsGroup.push({ key: t.stars, value: stats.stars });
     if (showCommits)
-      detailsLines.push(`Commits: ${stats.commits}`);
+      statsGroup.push({ key: t.commits, value: stats.commits });
     if (showFollowers)
-      detailsLines.push(`Followers: ${stats.followers}`);
-    const svg = renderSvg(asciiLines, detailsLines, theme);
+      statsGroup.push({ key: t.followers, value: stats.followers });
+    const data = {
+      header: `${username}@github`,
+      groups: [
+        { name: "Info", items: infoGroup },
+        { name: t.stats, items: statsGroup }
+      ]
+    };
+    const svg = renderSvg(asciiLines, data, theme);
     fs.writeFileSync("neofetch.svg", svg);
   } catch (error) {
     core.setFailed(error.message);

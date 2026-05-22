@@ -10,6 +10,8 @@ This GitHub Action puts a Neofetch-style card directly on your profile. It's zer
 
 All you have to do is create a file in your repository at `.github/workflows/neofetch.yml` with this exact code:
 
+> **Note on ASCII Art:** For the best visual layout, we recommend using an ASCII art design that is roughly **800 characters** in total size and around **35 lines** tall. The Action will automatically trim empty padding, but keeping it within these dimensions ensures it aligns beautifully with the stats panel!
+
 ```yaml
 name: Generate Neofetch Card
 on:
@@ -73,6 +75,8 @@ And here is one with custom ASCII art and colors:
 Este repositório tem um GitHub Action que cria um card de terminal top, estilo Neofetch, no teu perfil.
 
 Basta criares um ficheiro no teu repositório em `.github/workflows/neofetch.yml` com este código:
+
+> **Nota sobre a Arte ASCII:** Para obteres o melhor resultado visual, recomendamos o uso de uma arte ASCII com cerca de **800 caracteres** no total e cerca de **35 linhas** de altura. O Action irá cortar automaticamente o espaço vazio, mas manter estas dimensões garante que a arte se alinha perfeitamente com o painel de estatísticas!
 
 ```yaml
 name: Gerar Cartão Neofetch

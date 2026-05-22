@@ -5,6 +5,10 @@ inputs:
   os:
     description: "Operating System"
     required: false
+  lang:
+    description: 'Language (en or pt)'
+    default: 'en'
+    required: false
   ide:
     description: "Preferred IDE"
     required: false
