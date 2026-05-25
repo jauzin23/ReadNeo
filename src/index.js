@@ -81,7 +81,7 @@ async function run() {
     }
     asciiInput = asciiInput || defaultAscii;
 
-    const stats = await fetchStats(token, username);
+    const stats = await fetchStats(token, username, lang);
 
     const asciiLines = asciiInput.split('\n').filter((l) => l.trim().length > 0 || l.length > 0);
     const detailsLines = [];

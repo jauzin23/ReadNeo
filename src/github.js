@@ -1,7 +1,20 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 
-async function fetchStats(token, username) {
+function formatUptime(diffDays, lang) {
+  const years = Math.floor(diffDays / 365);
+  const days = diffDays % 365;
+
+  if (lang === 'pt') {
+    const yearsLabel = years === 1 ? 'ano' : 'anos';
+    const daysLabel = days === 1 ? 'dia' : 'dias';
+    return `${years} ${yearsLabel}, ${days} ${daysLabel}`;
+  }
+
+  return `${years} years, ${days} days`;
+}
+
+async function fetchStats(token, username, lang = 'en') {
   const octokit = github.getOctokit(token);
   
   const query = `
@@ -77,9 +90,7 @@ async function fetchStats(token, username) {
   const createdAtDate = new Date(user.createdAt);
   const now = new Date();
   const diffDays = Math.floor((now - createdAtDate) / (1000 * 60 * 60 * 24));
-  const years = Math.floor(diffDays / 365);
-  const days = diffDays % 365;
-  const uptime = `${years} years, ${days} days`;
+  const uptime = formatUptime(diffDays, lang);
 
   return {
     uptime,

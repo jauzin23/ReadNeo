@@ -23943,7 +23943,17 @@ var require_github2 = __commonJS({
   "src/github.js"(exports2, module2) {
     var core2 = require_core();
     var github = require_github();
-    async function fetchStats2(token, username) {
+    function formatUptime(diffDays, lang) {
+      const years = Math.floor(diffDays / 365);
+      const days = diffDays % 365;
+      if (lang === "pt") {
+        const yearsLabel = years === 1 ? "ano" : "anos";
+        const daysLabel = days === 1 ? "dia" : "dias";
+        return `${years} ${yearsLabel}, ${days} ${daysLabel}`;
+      }
+      return `${years} years, ${days} days`;
+    }
+    async function fetchStats2(token, username, lang = "en") {
       const octokit = github.getOctokit(token);
       const query = `
     query($username: String!) {
@@ -24005,9 +24015,7 @@ var require_github2 = __commonJS({
       const createdAtDate = new Date(user.createdAt);
       const now = /* @__PURE__ */ new Date();
       const diffDays = Math.floor((now - createdAtDate) / (1e3 * 60 * 60 * 24));
-      const years = Math.floor(diffDays / 365);
-      const days = diffDays % 365;
-      const uptime = `${years} years, ${days} days`;
+      const uptime = formatUptime(diffDays, lang);
       return {
         uptime,
         followers: user.followers.totalCount,
@@ -24333,7 +24341,7 @@ async function run() {
       }
     }
     asciiInput = asciiInput || defaultAscii;
-    const stats = await fetchStats(token, username);
+    const stats = await fetchStats(token, username, lang);
     const asciiLines = asciiInput.split("\n").filter((l) => l.trim().length > 0 || l.length > 0);
     const detailsLines = [];
     const showOs = core.getInput("show_os") !== "false";
