@@ -1,22 +1,22 @@
-const core = require('@actions/core');
-const github = require('@actions/github');
+const core = require("@actions/core");
+const github = require("@actions/github");
 
 function formatUptime(diffDays, lang) {
   const years = Math.floor(diffDays / 365);
   const days = diffDays % 365;
 
-  if (lang === 'pt') {
-    const yearsLabel = years === 1 ? 'ano' : 'anos';
-    const daysLabel = days === 1 ? 'dia' : 'dias';
+  if (lang === "pt") {
+    const yearsLabel = years === 1 ? "ano" : "anos";
+    const daysLabel = days === 1 ? "dia" : "dias";
     return `${years} ${yearsLabel}, ${days} ${daysLabel}`;
   }
 
   return `${years} years, ${days} days`;
 }
 
-async function fetchStats(token, username, lang = 'en') {
+async function fetchStats(token, username, lang = "en") {
   const octokit = github.getOctokit(token);
-  
+
   const query = `
     query($username: String!) {
       user(login: $username) {
@@ -44,7 +44,7 @@ async function fetchStats(token, username, lang = 'en') {
   let stars = 0;
   const langSize = {};
   let totalLangSize = 0;
-  
+
   for (const repo of user.repositories.nodes) {
     stars += repo.stargazerCount;
     for (const edge of repo.languages.edges) {
@@ -54,10 +54,10 @@ async function fetchStats(token, username, lang = 'en') {
   }
 
   const topLangs = Object.entries(langSize)
-    .filter(([name, size]) => (size / totalLangSize) > 0.02) // Filter out languages < 2%
+    .filter(([name, size]) => size / totalLangSize > 0.02) // Filter out languages < 2%
     .sort((a, b) => b[1] - a[1])
     .slice(0, 6)
-    .map(e => e[0])
+    .map((e) => e[0])
     .join(", ");
 
   let commits = 0;
@@ -81,7 +81,8 @@ async function fetchStats(token, username, lang = 'en') {
       `;
       const res = await octokit.graphql(q, { username, from, to });
       const coll = res.user.contributionsCollection;
-      commits += coll.totalCommitContributions + coll.restrictedContributionsCount;
+      commits +=
+        coll.totalCommitContributions + coll.restrictedContributionsCount;
     }
   } catch (e) {
     commits = "Hidden";
@@ -99,7 +100,7 @@ async function fetchStats(token, username, lang = 'en') {
     repos: user.repositories.totalCount,
     stars,
     commits,
-    languages: topLangs
+    languages: topLangs,
   };
 }
 

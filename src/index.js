@@ -74,7 +74,7 @@ async function run() {
 
     if (!asciiInput && asciiPath && fs.existsSync(asciiPath)) {
       try {
-        asciiInput = fs.readFileSync(asciiPath, 'utf8');
+        asciiInput = fs.readFileSync(asciiPath, "utf8");
       } catch (err) {
         core.warning(`Could not read ascii_path: ${err.message}`);
       }
@@ -83,7 +83,9 @@ async function run() {
 
     const stats = await fetchStats(token, username, lang);
 
-    const asciiLines = asciiInput.split('\n').filter((l) => l.trim().length > 0 || l.length > 0);
+    const asciiLines = asciiInput
+      .split("\n")
+      .filter((l) => l.trim().length > 0 || l.length > 0);
     const detailsLines = [];
 
     const showOs = core.getInput("show_os") !== "false";
@@ -97,8 +99,28 @@ async function run() {
 
     const lang = core.getInput("lang") || "en";
     const i18n = {
-      en: { os: 'OS', uptime: 'Uptime', ide: 'IDE', langs: 'Languages', repos: 'Repos', stars: 'Stars', commits: 'Commits', followers: 'Followers', stats: 'GitHub Stats' },
-      pt: { os: 'SO', uptime: 'Tempo Ativo', ide: 'IDE', langs: 'Linguagens', repos: 'Repositórios', stars: 'Estrelas', commits: 'Commits', followers: 'Seguidores', stats: 'Status do GitHub' }
+      en: {
+        os: "OS",
+        uptime: "Uptime",
+        ide: "IDE",
+        langs: "Languages",
+        repos: "Repos",
+        stars: "Stars",
+        commits: "Commits",
+        followers: "Followers",
+        stats: "GitHub Stats",
+      },
+      pt: {
+        os: "SO",
+        uptime: "Tempo Ativo",
+        ide: "IDE",
+        langs: "Linguagens",
+        repos: "Repositórios",
+        stars: "Estrelas",
+        commits: "Commits",
+        followers: "Seguidores",
+        stats: "Status do GitHub",
+      },
     };
     const t = i18n[lang] || i18n.en;
 
@@ -106,20 +128,22 @@ async function run() {
     if (showOs && osInput) infoGroup.push({ key: t.os, value: osInput });
     if (showUptime) infoGroup.push({ key: t.uptime, value: stats.uptime });
     if (showIde && ideInput) infoGroup.push({ key: t.ide, value: ideInput });
-    if (showLanguages && stats.languages) infoGroup.push({ key: t.langs, value: stats.languages });
+    if (showLanguages && stats.languages)
+      infoGroup.push({ key: t.langs, value: stats.languages });
 
     const statsGroup = [];
     if (showRepos) statsGroup.push({ key: t.repos, value: stats.repos });
     if (showStars) statsGroup.push({ key: t.stars, value: stats.stars });
     if (showCommits) statsGroup.push({ key: t.commits, value: stats.commits });
-    if (showFollowers) statsGroup.push({ key: t.followers, value: stats.followers });
+    if (showFollowers)
+      statsGroup.push({ key: t.followers, value: stats.followers });
 
     const data = {
       header: `${username}@github`,
       groups: [
-        { name: 'Info', items: infoGroup },
-        { name: t.stats, items: statsGroup }
-      ]
+        { name: "Info", items: infoGroup },
+        { name: t.stats, items: statsGroup },
+      ],
     };
 
     const svg = renderSvg(asciiLines, data, theme);
