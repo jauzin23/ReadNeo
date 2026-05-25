@@ -24341,6 +24341,7 @@ async function run() {
       }
     }
     asciiInput = asciiInput || defaultAscii;
+    const lang = core.getInput("lang") || "en";
     const stats = await fetchStats(token, username, lang);
     const asciiLines = asciiInput.split("\n").filter((l) => l.trim().length > 0 || l.length > 0);
     const detailsLines = [];
@@ -24352,10 +24353,29 @@ async function run() {
     const showStars = core.getInput("show_stars") !== "false";
     const showCommits = core.getInput("show_commits") !== "false";
     const showFollowers = core.getInput("show_followers") !== "false";
-    const lang = core.getInput("lang") || "en";
     const i18n = {
-      en: { os: "OS", uptime: "Uptime", ide: "IDE", langs: "Languages", repos: "Repos", stars: "Stars", commits: "Commits", followers: "Followers", stats: "GitHub Stats" },
-      pt: { os: "SO", uptime: "Tempo Ativo", ide: "IDE", langs: "Linguagens", repos: "Reposit\xF3rios", stars: "Estrelas", commits: "Commits", followers: "Seguidores", stats: "Status do GitHub" }
+      en: {
+        os: "OS",
+        uptime: "Uptime",
+        ide: "IDE",
+        langs: "Languages",
+        repos: "Repos",
+        stars: "Stars",
+        commits: "Commits",
+        followers: "Followers",
+        stats: "GitHub Stats"
+      },
+      pt: {
+        os: "SO",
+        uptime: "Tempo Ativo",
+        ide: "IDE",
+        langs: "Linguagens",
+        repos: "Reposit\xF3rios",
+        stars: "Estrelas",
+        commits: "Commits",
+        followers: "Seguidores",
+        stats: "Status do GitHub"
+      }
     };
     const t = i18n[lang] || i18n.en;
     const infoGroup = [];

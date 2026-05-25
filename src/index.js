@@ -81,6 +81,7 @@ async function run() {
     }
     asciiInput = asciiInput || defaultAscii;
 
+    const lang = core.getInput("lang") || "en";
     const stats = await fetchStats(token, username, lang);
 
     const asciiLines = asciiInput
@@ -97,7 +98,6 @@ async function run() {
     const showCommits = core.getInput("show_commits") !== "false";
     const showFollowers = core.getInput("show_followers") !== "false";
 
-    const lang = core.getInput("lang") || "en";
     const i18n = {
       en: {
         os: "OS",
